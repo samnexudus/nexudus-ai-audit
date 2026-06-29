@@ -48,6 +48,10 @@ def check_human_escalation(business_id: int) -> Section:
                 "it will tell them it cannot connect them to a human agent."
             ),
             hint="Enable 'AI escalation to human support' under Settings › AI Assistants › Channels › AI escalation.",
+            fields=[
+                {"label": "Escalation department", "placeholder": "Which help desk department should AI tickets be routed to?", "type": "text"},
+                {"label": "Response time message", "placeholder": "e.g. We usually respond within 2 hours during business hours (Mon–Fri 9am–6pm).", "type": "textarea"},
+            ],
         ))
         return section
 

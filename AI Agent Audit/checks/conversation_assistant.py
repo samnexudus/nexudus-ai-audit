@@ -212,6 +212,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             detail=(f"{len(stale)} article{'s' if len(stale)!=1 else ''} "
                     f"not updated in over 12 months: {names}{more}."),
             hint="Review and refresh these articles to ensure the AI gives accurate answers.",
+            fields=[{"label": f"Updated content — {a.get('Title', 'Untitled')}", "placeholder": "Paste the refreshed article content here…", "type": "textarea"} for a in stale],
         ))
     else:
         section.add(CheckResult(

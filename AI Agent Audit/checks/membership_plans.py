@@ -168,6 +168,7 @@ def check_membership_plans(business_id: int) -> Section:
             status="warn",
             detail=_names(no_desc),
             hint="Add descriptions — the AI presents them in the plan card alongside the sign-up link.",
+            fields=[{"label": f"Description — {t.get('Name', 'Plan')}", "placeholder": "What's included, who it's for, contract terms…", "type": "textarea"} for t in no_desc],
         ))
 
     # ── 4. Show price to AI ───────────────────────────────────────────────────
@@ -212,6 +213,7 @@ def check_membership_plans(business_id: int) -> Section:
             status="warn",
             detail=_names(no_notes),
             hint="Add 'Notes for AI' to describe what's included, who the plan suits, or any key terms the AI should convey naturally.",
+            fields=[{"label": f"AI notes — {t.get('Name', 'Plan')}", "placeholder": "What's included, who it suits, key terms and perks the AI should mention…", "type": "textarea"} for t in no_notes],
         ))
 
     return section

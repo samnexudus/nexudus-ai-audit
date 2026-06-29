@@ -105,6 +105,11 @@ def check_day_passes(business_id: int) -> Section:
             status="fail",
             detail="The AI has nothing to present when asked about day passes.",
             hint="Create at least one day pass product in Nexudus (Portal › Products) with SystemProductType = Day Pass.",
+            fields=[
+                {"label": "Day pass name", "placeholder": "e.g. Single Day Pass", "type": "text"},
+                {"label": "Day pass price", "placeholder": "e.g. £25", "type": "text"},
+                {"label": "Day pass description", "placeholder": "What's included — desk access, Wi-Fi, coffee, etc.", "type": "textarea"},
+            ],
         ))
     else:
         section.add(CheckResult(
@@ -160,6 +165,7 @@ def check_day_passes(business_id: int) -> Section:
                 status="warn",
                 detail=_names(no_desc),
                 hint="Add descriptions — the AI presents them in the day pass card alongside the purchase link.",
+                fields=[{"label": f"Description — {p.get('Name', 'Day pass')}", "placeholder": "What's included, who it's for, any access details…", "type": "textarea"} for p in no_desc],
             ))
 
         # ── 5. ShowPriceForAi ──────────────────────────────────────────────────
@@ -199,6 +205,7 @@ def check_day_passes(business_id: int) -> Section:
                 status="warn",
                 detail=_names(no_notes),
                 hint="Add 'Notes for AI' to enrich how the AI describes each pass — include what's included, who it suits, or any access details.",
+                fields=[{"label": f"AI notes — {p.get('Name', 'Day pass')}", "placeholder": "What's included, who it suits, access details, any restrictions…", "type": "textarea"} for p in no_notes],
             ))
         else:
             section.add(CheckResult(
@@ -319,6 +326,7 @@ def check_day_passes(business_id: int) -> Section:
                 status="warn",
                 detail=_names(no_desc),
                 hint="Add descriptions — the AI presents them when listing day-use space options.",
+                fields=[{"label": f"Description — {r.get('Name', 'Resource')}", "placeholder": "Describe this space: size, equipment, what it's ideal for…", "type": "textarea"} for r in no_desc],
             ))
         if no_cap:
             section.add(CheckResult(
@@ -326,6 +334,7 @@ def check_day_passes(business_id: int) -> Section:
                 status="warn",
                 detail=_names(no_cap),
                 hint="Set capacity (Allocation) — the AI shows how many people each space fits.",
+                fields=[{"label": f"Capacity — {r.get('Name', 'Resource')}", "placeholder": "e.g. 6 people", "type": "text"} for r in no_cap],
             ))
 
     return section

@@ -57,6 +57,13 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="warn",
             detail="The AI is not available on WhatsApp for this location.",
             hint="Enable WhatsApp under Settings › AI Assistants › Channels › WhatsApp and complete the Twilio configuration.",
+            fields=[
+                {"label": "Twilio Account SID", "placeholder": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "type": "text"},
+                {"label": "Twilio Auth Token", "placeholder": "Found in your Twilio Console › Account Info", "type": "text"},
+                {"label": "WhatsApp phone number", "placeholder": "+44 7700 900000", "type": "text"},
+                {"label": "Twilio Content Template SID", "placeholder": "HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (for outbound messages)", "type": "text"},
+                {"label": "Opt-in keyword", "placeholder": "e.g. JOIN or START", "type": "text"},
+            ],
         ))
         return section
 
@@ -189,6 +196,17 @@ def check_voice_channel(business_id: int) -> Section:
             status="warn",
             detail="The AI is not available on voice calls for this location.",
             hint="Enable Voice under Settings › AI Assistants › Channels › Voice and complete the Twilio and ElevenLabs configuration.",
+            fields=[
+                {"label": "Twilio Account SID", "placeholder": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "type": "text"},
+                {"label": "Twilio Auth Token", "placeholder": "Found in your Twilio Console › Account Info", "type": "text"},
+                {"label": "Twilio phone number", "placeholder": "+44 7700 900000", "type": "text"},
+                {"label": "ElevenLabs Bearer Token", "placeholder": "Found in your ElevenLabs account settings", "type": "text"},
+                {"label": "ElevenLabs Auth Token", "placeholder": "Found in your ElevenLabs account settings", "type": "text"},
+                {"label": "ElevenLabs Agent ID", "placeholder": "The ID of your ElevenLabs conversational AI agent", "type": "text"},
+                {"label": "ElevenLabs Phone Number ID", "placeholder": "The ID of your ElevenLabs phone number", "type": "text"},
+                {"label": "Call window start time", "placeholder": "e.g. 09:00", "type": "text"},
+                {"label": "Call window end time", "placeholder": "e.g. 18:00", "type": "text"},
+            ],
         ))
         return section
 
