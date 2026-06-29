@@ -1,9 +1,0 @@
-{
-  "name": "nexudus-floor-plan-creator",
-  "version": "0.1.0",
-  "description": "Turn a floor plan image into a Nexudus FloorPlanLayout — extract walls and rooms, preview the result, then commit via the nexudus CLI.",
-  "author": {
-    "name": "Nexudus"
-  },
-  "keywords": ["nexudus", "floor-plan", "vision", "coworking"]
-}
