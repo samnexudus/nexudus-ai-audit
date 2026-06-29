@@ -111,8 +111,12 @@ def _tab_score(sections: list) -> dict:
 NEXUDUS_TEAM_EMAIL = "sam@nexudus.com"
 
 
+_ACTION_PLAN_EXCLUDED_TABS = {"Channels"}
+
+
 def _action_plan_html(tabs: list) -> str:
-    all_sections = [s for _, group in tabs for s in group]
+    included = [(label, group) for label, group in tabs if label not in _ACTION_PLAN_EXCLUDED_TABS]
+    all_sections = [s for _, group in included for s in group]
     gaps = [(s, r) for s in all_sections for r in s.results if r.status in ("warn", "fail")]
 
     if not gaps:
