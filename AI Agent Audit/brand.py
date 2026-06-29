@@ -444,6 +444,152 @@ details.section[open] .section-chevron {{ transform: rotate(90deg); }}
   text-align: center;
 }}
 
+/* ── Action Plan ── */
+details.ap-section {{
+  margin-bottom: 12px;
+  border: 1px solid {C['border_neutral']};
+  border-radius: 12px;
+  overflow: hidden;
+}}
+details.ap-section summary {{ list-style: none; }}
+details.ap-section summary::-webkit-details-marker {{ display: none; }}
+
+.ap-section-title {{
+  font-family: {FONT_DISPLAY};
+  font-size: 15px;
+  font-weight: 600;
+  color: {C['navy']};
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  background: {C['white']};
+  transition: background 0.15s;
+}}
+.ap-section-title:hover {{ background: {C['bg']}; }}
+.ap-section-title .orange-dot {{
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: {C['orange']};
+  flex-shrink: 0;
+}}
+.ap-section-title-text {{ flex: 1; }}
+.ap-section-count {{
+  font-family: {FONT_BODY};
+  font-size: 12px;
+  font-weight: 500;
+  color: {C['grey_medium']};
+}}
+.ap-section-chevron {{
+  font-size: 18px;
+  color: {C['grey_medium']};
+  transition: transform 0.2s;
+  line-height: 1;
+}}
+details.ap-section[open] .ap-section-chevron {{ transform: rotate(90deg); }}
+.ap-section-body {{
+  padding: 8px 14px 14px;
+  background: {C['bg']};
+  border-top: 1px solid {C['border_neutral']};
+}}
+
+.ap-check {{
+  background: {C['white']};
+  border: 1px solid {C['border_neutral']};
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 10px;
+}}
+.ap-check-header {{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}}
+.ap-check-name {{
+  font-family: {FONT_DISPLAY};
+  font-size: 13px;
+  font-weight: 600;
+  color: {C['navy']};
+}}
+.ap-hint {{
+  font-family: {FONT_BODY};
+  font-size: 12px;
+  color: {C['grey_medium']};
+  margin-bottom: 10px;
+}}
+.ap-field-row {{
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}}
+.ap-field-row label {{
+  font-family: {FONT_DISPLAY};
+  font-size: 12px;
+  font-weight: 600;
+  color: {C['navy']};
+  min-width: 180px;
+  padding-top: 8px;
+  flex-shrink: 0;
+}}
+.ap-input, .ap-input-text {{
+  flex: 1;
+  font-family: {FONT_BODY};
+  font-size: 13px;
+  color: {C['text_body']};
+  background: {C['bg']};
+  border: 1px solid {C['border_cool']};
+  border-radius: 6px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}}
+.ap-input {{ resize: vertical; }}
+.ap-input:focus, .ap-input-text:focus {{
+  border-color: {C['blue']};
+  background: {C['white']};
+}}
+.ap-task-note {{
+  font-family: {FONT_BODY};
+  font-size: 13px;
+  color: {C['grey_medium']};
+  font-style: italic;
+  padding: 4px 0;
+}}
+.ap-actions {{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 16px 0 4px;
+  margin-top: 16px;
+  border-top: 1px solid {C['border_neutral']};
+}}
+.ap-btn {{
+  font-family: {FONT_DISPLAY};
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}}
+.ap-btn:hover {{ opacity: 0.85; }}
+.ap-btn-primary {{ background: {C['orange']}; color: {C['white']}; }}
+.ap-btn-secondary {{ background: {C['bg']}; color: {C['navy']}; border: 1px solid {C['border_cool']}; }}
+.ap-copy-confirm {{
+  font-family: {FONT_BODY};
+  font-size: 12px;
+  color: {C['green']};
+  opacity: 0;
+  transition: opacity 0.3s;
+}}
+.ap-copy-confirm.show {{ opacity: 1; }}
+
 /* ── Footer ── */
 footer {{
   border-top: 1px solid {C['border_neutral']};

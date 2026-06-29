@@ -98,6 +98,7 @@ def check_private_offices(business_id: int) -> Section:
             detail=_names(not_ai),
             hint="Enable 'Available to AI' on these offices so the AI can include them when presenting options to prospects.",
         ))
+        # No data to collect — customer must toggle the setting in Nexudus
     else:
         section.add(CheckResult(
             name="All offices published to AI",
@@ -143,6 +144,7 @@ def check_private_offices(business_id: int) -> Section:
             status="warn",
             detail=_names(no_cap),
             hint="Set capacity — the AI collects a team size requirement from the prospect and uses it to filter offices.",
+            fields=[{"label": f"Capacity — {o.get('Name', 'Office')}", "placeholder": "e.g. 4 people", "type": "text"} for o in no_cap],
         ))
 
     # ── 5. Price set ──────────────────────────────────────────────────────────
@@ -154,11 +156,13 @@ def check_private_offices(business_id: int) -> Section:
             detail=f"All {ai_total} AI-enabled offices have a price set.",
         ))
     else:
+        currency = no_price[0].get("FloorPlanBusinessCurrencyCode", "") if no_price else ""
         section.add(CheckResult(
             name=f"{len(no_price)} of {ai_total} AI-enabled offices have no price",
             status="warn",
             detail=_names(no_price),
             hint="Set a price — the AI collects a budget from the prospect and uses it to filter offices.",
+            fields=[{"label": f"Monthly price — {o.get('Name', 'Office')}", "placeholder": f"e.g. {currency} 1200/month", "type": "text"} for o in no_price],
         ))
 
     # ── 6. Show price to AI ───────────────────────────────────────────────────
@@ -176,6 +180,7 @@ def check_private_offices(business_id: int) -> Section:
             detail=_names(no_show_price),
             hint="Enable 'Show price to AI' so the AI can quote monthly prices and filter offices by budget.",
         ))
+        # No data to collect — customer must toggle the setting in Nexudus
 
     # ── 7. AI price override (informational) ──────────────────────────────────
     with_ai_price = [o for o in ai_offices if o.get("PriceForAi")]
@@ -204,6 +209,10 @@ def check_private_offices(business_id: int) -> Section:
             status="warn",
             detail=_names(no_notes),
             hint="Add 'Notes for AI' — this is how the AI describes the office to prospects. Include size, natural light, included furniture, and any standout features.",
+            fields=[
+                {"label": f"AI notes — {o.get('Name', 'Office')}", "placeholder": "Describe this office: size, natural light, furniture, standout features…", "type": "textarea"}
+                for o in no_notes
+            ],
         ))
 
     # ── 9. Floor plan area (location within building) ─────────────────────────
@@ -220,6 +229,10 @@ def check_private_offices(business_id: int) -> Section:
             status="warn",
             detail=_names(no_area),
             hint="Assign offices to a named floor plan area so the AI can describe where in the building each office is located.",
+            fields=[
+                {"label": f"Floor plan area — {o.get('Name', 'Office')}", "placeholder": "e.g. 2nd Floor, North Wing", "type": "text"}
+                for o in no_area
+            ],
         ))
 
     # ── Tours ─────────────────────────────────────────────────────────────────
@@ -253,6 +266,8 @@ def _add_tour_checks(section: Section, business_id: int):
             status="warn",
             detail="The AI cannot offer to book tours for prospects.",
             hint="Enable tours in your portal settings (Portal › Tour) so the AI can schedule viewings when prospects ask to see the space.",
+            fields=[{"label": "Tour host name", "placeholder": "Who will host tours?", "type": "text"},
+                    {"label": "Available tour hours", "placeholder": "e.g. Mon–Fri 9am–5pm", "type": "text"}],
         ))
         return
 
@@ -270,6 +285,7 @@ def _add_tour_checks(section: Section, business_id: int):
             status="fail",
             detail="A tour host is required — the AI books tours with a specific team member.",
             hint="Assign a tour host in Portal › Tour settings.",
+            fields=[{"label": "Tour host name / email", "placeholder": "Full name and email of the team member who will host tours", "type": "text"}],
         ))
     else:
         host_env = nexudus(["users", "get", host_id])
@@ -305,6 +321,7 @@ def _add_tour_checks(section: Section, business_id: int):
             status="warn",
             detail="The AI has no time constraints when suggesting tour slots — prospects could request tours at any hour.",
             hint="Enable tour time slots in Portal › Tour settings and configure the hours the team is available for viewings.",
+            fields=[{"label": "Available tour hours", "placeholder": "e.g. Mon–Fri 9:00–17:00, Sat 10:00–14:00", "type": "text"}],
         ))
         return
 
@@ -314,6 +331,7 @@ def _add_tour_checks(section: Section, business_id: int):
             status="fail",
             detail="Time slot restriction is on but no slots are defined. The AI will have no valid windows to offer prospects.",
             hint="Add at least one tour time slot in Portal › Tour settings.",
+            fields=[{"label": "Available tour hours", "placeholder": "e.g. Mon–Fri 9:00–17:00, Sat 10:00–14:00", "type": "text"}],
         ))
         return
 

@@ -71,6 +71,14 @@ def check_location_details(business_id: int) -> Section:
 
     detail = "\n".join(field_lines)
 
+    PLACEHOLDERS = {
+        "City":     "e.g. Manchester",
+        "Postcode": "e.g. M1 1AE",
+        "Address":  "e.g. 123 High Street",
+        "Phone":    "e.g. +44 161 000 0000",
+        "Email":    "e.g. hello@yourspace.com",
+    }
+
     if not missing:
         section.add(CheckResult(
             name="Location fields",
@@ -83,6 +91,7 @@ def check_location_details(business_id: int) -> Section:
             status="warn",
             detail=detail,
             hint=f"Missing: {', '.join(missing)}. Fill in these fields on your business profile.",
+            fields=[{"label": m, "placeholder": PLACEHOLDERS.get(m, f"Enter your {m.lower()}"), "type": "text"} for m in missing],
         ))
     else:
         section.add(CheckResult(
@@ -90,6 +99,7 @@ def check_location_details(business_id: int) -> Section:
             status="fail",
             detail=detail,
             hint=f"Missing: {', '.join(missing)}. The AI cannot give accurate location information without these fields.",
+            fields=[{"label": m, "placeholder": PLACEHOLDERS.get(m, f"Enter your {m.lower()}"), "type": "text"} for m in missing],
         ))
 
     # ── Coordinates (enables distance ordering) ────────────────────────────────
@@ -107,6 +117,10 @@ def check_location_details(business_id: int) -> Section:
             status="warn",
             detail="Latitude/Longitude not set. The AI cannot order results by distance from the user.",
             hint="Set coordinates on your business profile (Settings > Location).",
+            fields=[
+                {"label": "Latitude", "placeholder": "e.g. 53.48431", "type": "text"},
+                {"label": "Longitude", "placeholder": "e.g. -2.22810", "type": "text"},
+            ],
         ))
 
     # ── Opening hours ──────────────────────────────────────────────────────────
@@ -207,6 +221,7 @@ def check_rooms_and_resources(business_id: int) -> Section:
             status="fail",
             detail="The AI returns descriptions verbatim in room cards — without them it has nothing to say about each room.",
             hint="Add a description to every room and resource.",
+            fields=[{"label": f"Description — {r.get('Name', 'Resource')}", "placeholder": "Describe this room: features, equipment, what it's ideal for…", "type": "textarea"} for r in no_desc],
         ))
     else:
         names = ", ".join(r.get("Name", "Unnamed") for r in no_desc[:3])
@@ -216,6 +231,7 @@ def check_rooms_and_resources(business_id: int) -> Section:
             status="warn",
             detail=f"{names}{more}.",
             hint="Add descriptions so the AI can explain what each room offers.",
+            fields=[{"label": f"Description — {r.get('Name', 'Resource')}", "placeholder": "Describe this room: features, equipment, what it's ideal for…", "type": "textarea"} for r in no_desc],
         ))
 
     # ── Capacity ───────────────────────────────────────────────────────────────
@@ -234,6 +250,7 @@ def check_rooms_and_resources(business_id: int) -> Section:
             status="warn",
             detail=f"{names}{more}.",
             hint="Set the Allocation field — the AI shows capacity in every room card.",
+            fields=[{"label": f"Capacity — {r.get('Name', 'Resource')}", "placeholder": "e.g. 8 people", "type": "text"} for r in no_capacity],
         ))
 
     # ── Amenity flags ──────────────────────────────────────────────────────────

@@ -104,6 +104,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="fail",
             detail="Title-only articles give the AI nothing to match against semantically.",
             hint="Add detailed body content (FullText) to each article.",
+            fields=[{"label": f"Content — {a.get('Title', 'Untitled')}", "placeholder": "Full article content (at least a paragraph)…", "type": "textarea"} for a in no_fulltext],
         ))
     elif thin_fulltext:
         names = ", ".join(a.get("Title", "Untitled") for a in thin_fulltext[:3])
@@ -113,6 +114,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="warn",
             detail=f"Under {MIN_FULLTEXT_CHARS} characters: {names}{more}.",
             hint="Expand these articles — short content reduces the AI's ability to find relevant answers.",
+            fields=[{"label": f"Expanded content — {a.get('Title', 'Untitled')}", "placeholder": "Provide a fuller version of this article…", "type": "textarea"} for a in thin_fulltext],
         ))
     elif no_fulltext:
         names = ", ".join(a.get("Title", "Untitled") for a in no_fulltext[:3])
@@ -121,6 +123,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="warn",
             detail=f"{names}.",
             hint="Add body content to these articles.",
+            fields=[{"label": f"Content — {a.get('Title', 'Untitled')}", "placeholder": "Full article content…", "type": "textarea"} for a in no_fulltext],
         ))
     else:
         section.add(CheckResult(
@@ -139,6 +142,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="warn",
             detail="The AI surfaces the summary first in its reply.",
             hint="Add a concise SummaryText to each article.",
+            fields=[{"label": f"Summary — {a.get('Title', 'Untitled')}", "placeholder": "1–2 sentence summary of this article", "type": "textarea"} for a in no_summary],
         ))
     elif no_summary:
         names = ", ".join(a.get("Title", "Untitled") for a in no_summary[:3])
@@ -147,6 +151,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="warn",
             detail=f"{names}.",
             hint="Add a SummaryText to these articles.",
+            fields=[{"label": f"Summary — {a.get('Title', 'Untitled')}", "placeholder": "1–2 sentence summary of this article", "type": "textarea"} for a in no_summary],
         ))
     else:
         section.add(CheckResult(
@@ -280,6 +285,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="warn",
             detail=f"{', '.join(missing)}.",
             hint="Add articles covering these topics to improve AI answer coverage.",
+            fields=[{"label": f"Article content — {t}", "placeholder": f"Content for a new FAQ article covering '{t}'…", "type": "textarea"} for t in missing],
         ))
     else:
         section.add(CheckResult(
@@ -287,6 +293,7 @@ def check_conversation_assistant(business_id: int) -> Section:
             status="fail",
             detail=f"{', '.join(missing)}.",
             hint="Create articles for these topics. The AI can only answer questions it has content for.",
+            fields=[{"label": f"Article content — {t}", "placeholder": f"Content for a new FAQ article covering '{t}'…", "type": "textarea"} for t in missing],
         ))
 
     return section

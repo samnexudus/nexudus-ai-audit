@@ -108,32 +108,115 @@ def _tab_score(sections: list) -> dict:
     return totals
 
 
+NEXUDUS_TEAM_EMAIL = "sam@nexudus.com"
+
+
+def _action_plan_html(tabs: list) -> str:
+    all_sections = [s for _, group in tabs for s in group]
+    gaps = [(s, r) for s in all_sections for r in s.results if r.status in ("warn", "fail")]
+
+    if not gaps:
+        return '<p class="tab-description">No gaps found — this account is fully set up for AI Agent.</p>'
+
+    # Group by section
+    by_section: dict = {}
+    for s, r in gaps:
+        by_section.setdefault(s.title, []).append(r)
+
+    input_id = 0
+    sections_html = ""
+    for title, results in by_section.items():
+        n_gaps = len(results)
+        checks_html = ""
+        for r in results:
+            badge = f'<span class="badge {r.status}">{r.status.upper()}</span>'
+            hint_html = f'<div class="ap-hint">→ {_esc(r.hint)}</div>' if r.hint else ""
+
+            if r.fields:
+                inputs_html = ""
+                for f_def in r.fields:
+                    input_id += 1
+                    fid = f"ap-{input_id}"
+                    label = _esc(f_def.get("label", ""))
+                    placeholder = _esc(f_def.get("placeholder", ""))
+                    f_type = f_def.get("type", "text")
+                    if f_type == "textarea":
+                        inp = f'<textarea id="{fid}" class="ap-input" data-section="{_esc(title)}" data-check="{_esc(r.name)}" data-field="{label}" placeholder="{placeholder}" rows="3"></textarea>'
+                    else:
+                        inp = f'<input id="{fid}" type="text" class="ap-input ap-input-text" data-section="{_esc(title)}" data-check="{_esc(r.name)}" data-field="{label}" placeholder="{placeholder}">'
+                    inputs_html += f'<div class="ap-field-row"><label for="{fid}">{label}</label>{inp}</div>'
+            else:
+                # Action-only check — no data to collect, just show as a task
+                inputs_html = f'<p class="ap-task-note">Action required: {_esc(r.hint or "See the audit tab for details.")}</p>'
+
+            checks_html += f"""
+        <div class="ap-check">
+          <div class="ap-check-header">{badge}<span class="ap-check-name">{_esc(r.name)}</span></div>
+          {hint_html}
+          {inputs_html}
+        </div>"""
+
+        n_label = f"{n_gaps} item{'s' if n_gaps != 1 else ''}"
+        sections_html += f"""
+      <details class="ap-section" open>
+        <summary class="ap-section-title">
+          <span class="orange-dot"></span>
+          <span class="ap-section-title-text">{_esc(title)}</span>
+          <span class="ap-section-count">{n_label}</span>
+          <span class="ap-section-chevron">›</span>
+        </summary>
+        <div class="ap-section-body">{checks_html}</div>
+      </details>"""
+
+    return f"""
+    <p class="tab-description">Fill in the details below for each gap found in the audit. When you're done, send them directly to the Nexudus team or download a copy for your records.</p>
+    <form id="action-plan-form" onsubmit="return false;">
+      {sections_html}
+      <div class="ap-actions">
+        <button class="ap-btn ap-btn-primary" onclick="sendToNexudus()">Send to Nexudus</button>
+        <button class="ap-btn ap-btn-secondary" onclick="downloadResponses()">Download</button>
+        <button class="ap-btn ap-btn-secondary" onclick="copyResponses()">Copy to clipboard</button>
+        <span class="ap-copy-confirm" id="copy-confirm">Copied!</span>
+      </div>
+    </form>"""
+
+
 def _tabs_html(tabs: list) -> str:
+    all_tabs = list(tabs) + [("Action Plan", None)]  # None signals action plan tab
     nav_items = ""
     panels = ""
-    for i, (label, sections) in enumerate(tabs):
+
+    for i, item in enumerate(all_tabs):
+        label, sections = item
         tab_id = f"tab-{i}"
         active_cls = " active" if i == 0 else ""
-        sc = _tab_score(sections)
-        pills = (
-            _pill("pass", sc["pass"]) +
-            _pill("warn", sc["warn"]) +
-            _pill("fail", sc["fail"])
-        )
-        nav_items += f'<button class="tab-btn{active_cls}" onclick="switchTab({i})" id="btn-{tab_id}">{_esc(label)}<span class="tab-pills">{pills}</span></button>'
 
-        descriptions = {
-            "Conversational Agents": "The Nexudus AI assistant answers questions, helps members manage their bookings, and guides prospects toward purchasing a day pass, signing up for a membership, or scheduling a private office tour.",
-            "Channels": "The AI assistant supports four channels: Chat, Email, WhatsApp, and Voice. All four share the same capabilities, the same data, and the same visibility rules. The differences are in how conversations are started, how sessions are managed, and how responses are formatted.",
-        }
-        desc = descriptions.get(label, "")
-        desc_html = f'<p class="tab-description">{_esc(desc)}</p>' if desc else ""
-
-        if sections:
-            content = desc_html + "".join(_section_html(s) for s in sections)
+        if sections is None:
+            # Action plan tab — count gaps as its "score"
+            all_sections = [s for _, group in tabs for s in group]
+            n_fail = sum(r.status == "fail" for s in all_sections for r in s.results)
+            n_warn = sum(r.status == "warn" for s in all_sections for r in s.results)
+            pills = _pill("fail", n_fail) + _pill("warn", n_warn)
+            content = _action_plan_html(tabs)
         else:
-            content = desc_html + '<div class="tab-empty">No checks configured for this tab yet.</div>'
+            sc = _tab_score(sections)
+            pills = (
+                _pill("pass", sc["pass"]) +
+                _pill("warn", sc["warn"]) +
+                _pill("fail", sc["fail"])
+            )
+            descriptions = {
+                "Conversational Agents": "The Nexudus AI assistant answers questions, helps members manage their bookings, and guides prospects toward purchasing a day pass, signing up for a membership, or scheduling a private office tour.",
+                "Channels": "The AI assistant supports four channels: Chat, Email, WhatsApp, and Voice. All four share the same capabilities, the same data, and the same visibility rules. The differences are in how conversations are started, how sessions are managed, and how responses are formatted.",
+            }
+            desc = descriptions.get(label, "")
+            desc_html = f'<p class="tab-description">{_esc(desc)}</p>' if desc else ""
+            if sections:
+                content = desc_html + "".join(_section_html(s) for s in sections)
+            else:
+                content = desc_html + '<div class="tab-empty">No checks configured for this tab yet.</div>'
 
+        nav_items += f'<button class="tab-btn{active_cls}" onclick="switchTab({i})" id="btn-{tab_id}">{_esc(label)}<span class="tab-pills">{pills}</span></button>'
         panels += f'<div class="tab-panel{active_cls}" id="{tab_id}">{content}</div>'
 
     return f"""
@@ -229,6 +312,58 @@ def generate_html(tabs: list, whoami: dict, run_date: Optional[Date] = None) -> 
     function switchTab(i) {{
       document.querySelectorAll('.tab-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
       document.querySelectorAll('.tab-panel').forEach((p, idx) => p.classList.toggle('active', idx === i));
+    }}
+
+    function collectResponses() {{
+      const nl = '\\n';
+      const inputs = document.querySelectorAll('.ap-input');
+      let text = 'AI Agent Audit — Action Plan' + nl;
+      text += '=============================' + nl + nl;
+      let currentSection = '';
+      let currentCheck = '';
+      inputs.forEach(el => {{
+        const section = el.dataset.section || '';
+        const check = el.dataset.check || '';
+        const fieldLabel = el.dataset.field || check;
+        const value = el.value.trim();
+        if (!value) return;
+        if (section !== currentSection) {{
+          text += (currentSection ? nl : '') + section + nl + '-'.repeat(section.length) + nl;
+          currentSection = section;
+          currentCheck = '';
+        }}
+        if (check !== currentCheck) {{
+          text += nl + check + nl;
+          currentCheck = check;
+        }}
+        text += '  ' + fieldLabel + ': ' + value + nl;
+      }});
+      return text;
+    }}
+
+    function sendToNexudus() {{
+      const text = collectResponses();
+      const subject = encodeURIComponent(document.querySelector('h1') ? 'AI Agent Audit — ' + document.querySelector('h1').textContent : 'AI Agent Audit');
+      const body = encodeURIComponent(text);
+      window.location.href = 'mailto:{NEXUDUS_TEAM_EMAIL}?subject=' + subject + '&body=' + body;
+    }}
+
+    function downloadResponses() {{
+      const text = collectResponses();
+      const blob = new Blob([text], {{ type: 'text/plain' }});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ai-audit-responses.txt';
+      a.click();
+    }}
+
+    function copyResponses() {{
+      const text = collectResponses();
+      navigator.clipboard.writeText(text).then(() => {{
+        const el = document.getElementById('copy-confirm');
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+      }});
     }}
   </script>
 </body>

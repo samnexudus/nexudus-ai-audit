@@ -92,6 +92,7 @@ def check_human_escalation(business_id: int) -> Section:
                 "Set a default escalation department under Settings › AI Assistants › Channels › AI escalation "
                 "to control exactly where AI-generated tickets land."
             ),
+            fields=[{"label": "Preferred escalation department", "placeholder": "Which help desk department should AI tickets go to?", "type": "text"}],
         ))
     else:
         matched = next((d for d in departments if str(d.get("Id")) == dept_id), None)
@@ -116,6 +117,7 @@ def check_human_escalation(business_id: int) -> Section:
                 "Add an SLA message under Settings › AI Assistants › Channels › AI escalation, "
                 "e.g. 'We usually respond within 2 hours during business hours.'"
             ),
+            fields=[{"label": "Response time message", "placeholder": "e.g. We usually respond within 2 hours during business hours (Mon–Fri 9am–6pm).", "type": "textarea"}],
         ))
     else:
         section.add(CheckResult(

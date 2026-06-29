@@ -19,6 +19,9 @@ class CheckResult:
     status: str          # "pass" | "warn" | "fail" | "skip"
     detail: str = ""
     hint:   str = ""
+    # Specific data fields the customer needs to fill in.
+    # Each entry: {"label": str, "placeholder": str, "type": "text"|"textarea"}
+    fields: list = field(default_factory=list)
 
 
 @dataclass

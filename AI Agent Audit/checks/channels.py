@@ -74,6 +74,7 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="fail",
             detail="A Twilio Account SID is required to send and receive WhatsApp messages.",
             hint="Add your Twilio Account SID under Settings › AI Assistants › Channels › WhatsApp.",
+            fields=[{"label": "Twilio Account SID", "placeholder": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "type": "text"}],
         ))
     else:
         section.add(CheckResult(
@@ -90,6 +91,7 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="fail",
             detail="A Twilio Auth Token is required to authenticate API requests.",
             hint="Add your Twilio Auth Token under Settings › AI Assistants › Channels › WhatsApp.",
+            fields=[{"label": "Twilio Auth Token", "placeholder": "Found in your Twilio Console › Account Info", "type": "text"}],
         ))
     else:
         section.add(CheckResult(
@@ -105,6 +107,7 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="fail",
             detail="A WhatsApp-enabled phone number is required for the AI to send and receive messages.",
             hint="Add your WhatsApp phone number under Settings › AI Assistants › Channels › WhatsApp.",
+            fields=[{"label": "WhatsApp phone number", "placeholder": "+44 7700 900000", "type": "text"}],
         ))
     else:
         section.add(CheckResult(
@@ -121,6 +124,7 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="warn",
             detail="Without a Twilio content template SID, the AI cannot send outbound WhatsApp messages to initiate conversations.",
             hint="Create a WhatsApp message template in Twilio and add the Content SID under Settings › AI Assistants › Channels › WhatsApp.",
+            fields=[{"label": "Twilio Content Template SID", "placeholder": "HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "type": "text"}],
         ))
     else:
         section.add(CheckResult(
@@ -137,6 +141,7 @@ def check_whatsapp_channel(business_id: int) -> Section:
             status="warn",
             detail="Without an opt-in keyword, users cannot subscribe to receive outbound WhatsApp messages from the AI.",
             hint="Set an opt-in keyword (e.g. 'JOIN' or 'START') under Settings › AI Assistants › Channels › WhatsApp.",
+            fields=[{"label": "Opt-in keyword", "placeholder": "e.g. JOIN or START", "type": "text"}],
         ))
     else:
         section.add(CheckResult(
@@ -198,18 +203,20 @@ def check_voice_channel(business_id: int) -> Section:
     twilio_token   = by_name.get("AiVoice.Twilio.AuthToken", "")
     twilio_phone   = by_name.get("AiVoice.Twilio.PhoneNumber", "")
 
-    twilio_missing = [k for k, v in [
-        ("Account ID", twilio_account),
-        ("Auth Token", twilio_token),
-        ("Phone number", twilio_phone),
-    ] if not v]
+    _twilio_fields = [
+        ("Account ID", twilio_account, "Twilio Account SID", "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+        ("Auth Token", twilio_token, "Twilio Auth Token", "Found in your Twilio Console › Account Info"),
+        ("Phone number", twilio_phone, "Twilio phone number", "+44 7700 900000"),
+    ]
+    twilio_missing = [(k, label, placeholder) for k, v, label, placeholder in _twilio_fields if not v]
 
     if twilio_missing:
         section.add(CheckResult(
             name=f"Twilio configuration incomplete — {len(twilio_missing)} field{'s' if len(twilio_missing) != 1 else ''} missing",
             status="fail",
-            detail=", ".join(twilio_missing),
+            detail=", ".join(k for k, _, _ in twilio_missing),
             hint="Complete the Twilio configuration under Settings › AI Assistants › Channels › Voice.",
+            fields=[{"label": label, "placeholder": placeholder, "type": "text"} for _, label, placeholder in twilio_missing],
         ))
     else:
         section.add(CheckResult(
@@ -224,19 +231,21 @@ def check_voice_channel(business_id: int) -> Section:
     el_agent   = by_name.get("AiVoice.Elevenlabs.AgentId", "")
     el_phone   = by_name.get("AiVoice.Elevenlabs.PhoneNumberId", "")
 
-    el_missing = [k for k, v in [
-        ("Bearer Token", el_bearer),
-        ("Auth Token", el_auth),
-        ("Agent ID", el_agent),
-        ("Phone Number ID", el_phone),
-    ] if not v]
+    _el_fields = [
+        ("Bearer Token", el_bearer, "ElevenLabs Bearer Token", "Found in your ElevenLabs account settings"),
+        ("Auth Token", el_auth, "ElevenLabs Auth Token", "Found in your ElevenLabs account settings"),
+        ("Agent ID", el_agent, "ElevenLabs Agent ID", "The ID of your ElevenLabs conversational AI agent"),
+        ("Phone Number ID", el_phone, "ElevenLabs Phone Number ID", "The ID of your ElevenLabs phone number"),
+    ]
+    el_missing = [(k, label, placeholder) for k, v, label, placeholder in _el_fields if not v]
 
     if el_missing:
         section.add(CheckResult(
             name=f"ElevenLabs configuration incomplete — {len(el_missing)} field{'s' if len(el_missing) != 1 else ''} missing",
             status="fail",
-            detail=", ".join(el_missing),
+            detail=", ".join(k for k, _, _ in el_missing),
             hint="Complete the ElevenLabs configuration under Settings › AI Assistants › Channels › Voice.",
+            fields=[{"label": label, "placeholder": placeholder, "type": "text"} for _, label, placeholder in el_missing],
         ))
     else:
         section.add(CheckResult(
@@ -261,6 +270,10 @@ def check_voice_channel(business_id: int) -> Section:
             status="warn",
             detail="No call start/end times set — the AI may attempt outbound calls at any hour.",
             hint="Set a call window under Settings › AI Assistants › Channels › Voice.",
+            fields=[
+                {"label": "Call window start time", "placeholder": "e.g. 09:00", "type": "text"},
+                {"label": "Call window end time", "placeholder": "e.g. 18:00", "type": "text"},
+            ],
         ))
 
     # ── 5. Outbound calling constraints (informational) ────────────────────────
