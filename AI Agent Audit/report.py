@@ -108,7 +108,7 @@ def _tab_score(sections: list) -> dict:
     return totals
 
 
-NEXUDUS_TEAM_EMAIL = "sam@nexudus.com"
+NEXUDUS_WEBHOOK_URL = ""  # Paste your Zapier webhook URL here
 
 
 _ACTION_PLAN_EXCLUDED_TABS = {"Channels"}
@@ -177,10 +177,12 @@ def _action_plan_html(tabs: list) -> str:
     <form id="action-plan-form" onsubmit="return false;">
       {sections_html}
       <div class="ap-actions">
-        <button class="ap-btn ap-btn-primary" onclick="sendToNexudus()">Send to Nexudus</button>
+        <button id="send-btn" class="ap-btn ap-btn-primary" onclick="sendToNexudus()">Send to Nexudus</button>
         <button class="ap-btn ap-btn-secondary" onclick="downloadResponses()">Download</button>
         <button class="ap-btn ap-btn-secondary" onclick="copyResponses()">Copy to clipboard</button>
         <span class="ap-copy-confirm" id="copy-confirm">Copied!</span>
+        <span class="ap-send-confirm" id="send-confirm">Sent to Nexudus ✓</span>
+        <span class="ap-send-error" id="send-error">Something went wrong — please try again or download and email instead.</span>
       </div>
     </form>"""
 
@@ -345,11 +347,55 @@ def generate_html(tabs: list, whoami: dict, run_date: Optional[Date] = None) -> 
       return text;
     }}
 
+    function collectResponsesJson() {{
+      const inputs = document.querySelectorAll('.ap-input');
+      const payload = {{
+        business: (document.querySelector('h1') || {{}}).textContent || '',
+        submitted_at: new Date().toISOString(),
+        responses: []
+      }};
+      inputs.forEach(el => {{
+        const value = el.value.trim();
+        if (!value) return;
+        payload.responses.push({{
+          section: el.dataset.section || '',
+          check: el.dataset.check || '',
+          field: el.dataset.field || '',
+          value: value
+        }});
+      }});
+      return payload;
+    }}
+
     function sendToNexudus() {{
-      const text = collectResponses();
-      const subject = encodeURIComponent(document.querySelector('h1') ? 'AI Agent Audit — ' + document.querySelector('h1').textContent : 'AI Agent Audit');
-      const body = encodeURIComponent(text);
-      window.location.href = 'mailto:{NEXUDUS_TEAM_EMAIL}?subject=' + subject + '&body=' + body;
+      const WEBHOOK_URL = '{NEXUDUS_WEBHOOK_URL}';
+      if (!WEBHOOK_URL) {{
+        alert('Webhook URL not configured yet.');
+        return;
+      }}
+      const payload = collectResponsesJson();
+      if (!payload.responses.length) {{
+        alert('Please fill in at least one field before submitting.');
+        return;
+      }}
+      const btn = document.getElementById('send-btn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+      fetch(WEBHOOK_URL, {{
+        method: 'POST',
+        headers: {{ 'Content-Type': 'application/json' }},
+        body: JSON.stringify(payload),
+      }})
+      .then(r => {{
+        if (!r.ok) throw new Error('non-2xx');
+        btn.textContent = 'Sent ✓';
+        document.getElementById('send-confirm').classList.add('show');
+      }})
+      .catch(() => {{
+        btn.textContent = 'Send to Nexudus';
+        btn.disabled = false;
+        document.getElementById('send-error').classList.add('show');
+      }});
     }}
 
     function downloadResponses() {{

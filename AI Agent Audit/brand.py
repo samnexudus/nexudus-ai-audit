@@ -581,14 +581,16 @@ details.ap-section[open] .ap-section-chevron {{ transform: rotate(90deg); }}
 .ap-btn:hover {{ opacity: 0.85; }}
 .ap-btn-primary {{ background: {C['orange']}; color: {C['white']}; }}
 .ap-btn-secondary {{ background: {C['bg']}; color: {C['navy']}; border: 1px solid {C['border_cool']}; }}
-.ap-copy-confirm {{
+.ap-copy-confirm, .ap-send-confirm, .ap-send-error {{
   font-family: {FONT_BODY};
   font-size: 12px;
-  color: {C['green']};
   opacity: 0;
   transition: opacity 0.3s;
 }}
-.ap-copy-confirm.show {{ opacity: 1; }}
+.ap-copy-confirm {{ color: {C['green']}; }}
+.ap-send-confirm {{ color: {C['green']}; }}
+.ap-send-error {{ color: {C['pink']}; }}
+.ap-copy-confirm.show, .ap-send-confirm.show, .ap-send-error.show {{ opacity: 1; }}
 
 /* ── Footer ── */
 footer {{
